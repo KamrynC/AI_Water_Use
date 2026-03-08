@@ -85,6 +85,25 @@ st.markdown("""
     border-radius: 12px;
     padding: 1rem !important;
     box-shadow: 0 4px 24px rgba(56, 189, 248, 0.08);
+    border-top: 4px solid #38bdf8;
+  }
+
+  /* Banded accent colors — cycles through 4 model brand colors */
+  [data-testid="column"]:nth-child(1) [data-testid="metric-container"] {
+    border-top: 4px solid #10b981;
+    background: linear-gradient(160deg, #0c2b22 0%, #0c1e36 60%);
+  }
+  [data-testid="column"]:nth-child(2) [data-testid="metric-container"] {
+    border-top: 4px solid #f97316;
+    background: linear-gradient(160deg, #2b1608 0%, #0c1e36 60%);
+  }
+  [data-testid="column"]:nth-child(3) [data-testid="metric-container"] {
+    border-top: 4px solid #4285f4;
+    background: linear-gradient(160deg, #0b1d38 0%, #0c1e36 60%);
+  }
+  [data-testid="column"]:nth-child(4) [data-testid="metric-container"] {
+    border-top: 4px solid #a855f7;
+    background: linear-gradient(160deg, #1a0c2b 0%, #0c1e36 60%);
   }
   [data-testid="metric-container"] label {
     color: #7dd3fc !important;
@@ -137,7 +156,7 @@ st.markdown("""
     padding: 14px 18px;
     margin: 12px 0;
     font-size: 0.85rem;
-    color: #a3a37a;
+    color: #c8c87a;
   }
   .disclosure-box b { color: #fcd34d; }
 
@@ -156,7 +175,7 @@ st.markdown("""
   .comparison-card .icon   { font-size: 2.4rem; line-height: 1.2; }
   .comparison-card .count  { font-family: 'Space Mono', monospace; font-size: 1.7rem;
                               color: #38bdf8; font-weight: 700; margin: 4px 0; }
-  .comparison-card .label  { font-size: 0.82rem; color: #64748b; }
+  .comparison-card .label  { font-size: 0.82rem; color: #94a3b8; }
 
   /* ── Tabs ── */
   .stTabs [data-baseweb="tab-list"] {
@@ -165,7 +184,7 @@ st.markdown("""
     gap: 4px;
   }
   .stTabs [data-baseweb="tab"] {
-    color: #64748b !important;
+    color: #7da4c0 !important;
     font-family: 'DM Sans', sans-serif !important;
     font-weight: 600;
     padding: 10px 20px;
@@ -194,7 +213,7 @@ st.markdown("""
   /* ── Footer ── */
   .footer-text {
     text-align: center;
-    color: #334155;
+    color: #7a92ae;
     font-size: 0.8rem;
     padding: 24px 0 12px;
     border-top: 1px solid #1e3a5f;
