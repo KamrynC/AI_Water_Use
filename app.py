@@ -4,11 +4,10 @@
 ║         How thirsty is AI, really?                              ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  Purpose: Educate the general public about the hidden water     ║
-║  footprint of AI systems across four key stages:               ║
+║  footprint of AI systems across three key stages:               ║
 ║    1. Inference  — water used per prompt                        ║
 ║    2. Training   — one-time cost to build the model             ║
 ║    3. Development— fine-tuning, RLHF, safety testing            ║
-║    4. Electricity— water used to generate the power AI runs on  ║
 ║                                                                 ║
 ║  Primary Source: Li et al. (2023) "Making AI Less Thirsty"      ║
 ║  NOTE: Most AI companies do NOT disclose water usage data.      ║
@@ -32,201 +31,233 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ──────────────────────────────────────────────────────────────────
-# CUSTOM CSS
-# Design philosophy: deep-ocean dark theme with electric-blue/cyan
-# accents — evoking both water and technology. Clean, editorial feel
-# with strong typographic hierarchy.
-# ──────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap');
 
-  /* ── Global reset & base ── */
-  html, body, [class*="css"] {
-    font-family: 'DM Sans', sans-serif;
-  }
+    /* Light theme: global */
+    html, body, [class*="css"] {
+        font-family: 'DM Sans', sans-serif;
+        color: #0f172a;
+        background: #ffffff;
+    }
 
-  /* ── App background ── */
-  .stApp {
-    background: linear-gradient(160deg, #060c1a 0%, #0a1628 50%, #061020 100%);
-    color: #e2eaf5;
-  }
+    .stApp {
+        background: linear-gradient(300deg, #a6bfd9 0%, #ffffff 100%);
+        color: #0f172a;
+    }
 
-  /* ── Main content area ── */
-  .block-container {
-    padding-top: 2rem;
-    max-width: 1400px;
-  }
+    .block-container {
+        padding-top: 2rem;
+        max-width: 1400px;
+    }
 
-  /* ── Headings ── */
-  h1 {
-    font-family: 'Space Mono', monospace !important;
-    color: #38bdf8 !important;
-    font-size: 2.6rem !important;
-    letter-spacing: -1px;
-  }
-  h2 {
-    font-family: 'Space Mono', monospace !important;
-    color: #7dd3fc !important;
-    font-size: 1.5rem !important;
-    border-bottom: 1px solid #1e3a5f;
-    padding-bottom: 0.4rem;
-  }
-  h3 {
-    color: #93c5fd !important;
-    font-weight: 600 !important;
-  }
+    /* Headings */
+    h1 {
+        font-family: 'Space Mono', monospace !important;
+        color: #0b5dbb !important;
+        font-size: 2.6rem !important;
+        letter-spacing: -1px;
+    }
+    h2 {
+        font-family: 'Space Mono', monospace !important;
+        color: #0b77c6 !important;
+        font-size: 1.5rem !important;
+        border-bottom: 1px solid #e6eef8;
+        padding-bottom: 0.4rem;
+    }
+    h3 {
+        color: #0a4f8a !important;
+        font-weight: 600 !important;
+    }
 
-  /* ── Metric cards ── */
-  [data-testid="metric-container"] {
-    background: linear-gradient(135deg, #0f2540 0%, #0c1e36 100%);
-    border: 1px solid #1e4976;
-    border-radius: 12px;
-    padding: 1rem !important;
-    box-shadow: 0 4px 24px rgba(56, 189, 248, 0.08);
-    border-top: 4px solid #38bdf8;
-  }
+    /* Metric cards */
+    [data-testid="metric-container"] {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e6eef8;
+        border-radius: 12px;
+        padding: 1rem !important;
+        box-shadow: 0 4px 24px rgba(11, 77, 187, 0.06);
+        border-top: 4px solid #0b5dbb;
+        color: #0b4f8a !important;
+    }
+    [data-testid="metric-container"] * {
+        color: #0b4f8a !important;
+    }
+    [data-testid="metric-container"] label {
+        color: #0b5dbb !important;
+        font-size: 0.8rem !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    [data-testid="metric-container"] [data-testid="stMetricValue"] {
+        color: #0b5dbb !important;
+        font-family: 'Space Mono', monospace !important;
+        font-size: 1.4rem !important;
+    }
+    [data-testid="metric-container"] div {
+        color: #0b4f8a !important;
+    }
 
-  /* Banded accent colors — cycles through 4 model brand colors */
-  [data-testid="column"]:nth-child(1) [data-testid="metric-container"] {
-    border-top: 4px solid #10b981;
-    background: linear-gradient(160deg, #0c2b22 0%, #0c1e36 60%);
-  }
-  [data-testid="column"]:nth-child(2) [data-testid="metric-container"] {
-    border-top: 4px solid #f97316;
-    background: linear-gradient(160deg, #2b1608 0%, #0c1e36 60%);
-  }
-  [data-testid="column"]:nth-child(3) [data-testid="metric-container"] {
-    border-top: 4px solid #4285f4;
-    background: linear-gradient(160deg, #0b1d38 0%, #0c1e36 60%);
-  }
-  [data-testid="column"]:nth-child(4) [data-testid="metric-container"] {
-    border-top: 4px solid #a855f7;
-    background: linear-gradient(160deg, #1a0c2b 0%, #0c1e36 60%);
-  }
-  [data-testid="metric-container"] label {
-    color: #7dd3fc !important;
-    font-size: 0.8rem !important;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  [data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #38bdf8 !important;
-    font-family: 'Space Mono', monospace !important;
-    font-size: 1.4rem !important;
-  }
+    /* Banded accent colors — cycles through 4 model brand colors */
+    [data-testid="column"]:nth-child(1) [data-testid="metric-container"] {
+        border-top: 4px solid #10b981;
+        background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+    }
+    [data-testid="column"]:nth-child(2) [data-testid="metric-container"] {
+        border-top: 4px solid #f97316;
+        background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    }
+    [data-testid="column"]:nth-child(3) [data-testid="metric-container"] {
+        border-top: 4px solid #4285f4;
+        background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+    }
+    [data-testid="column"]:nth-child(4) [data-testid="metric-container"] {
+        border-top: 4px solid #a855f7;
+        background: linear-gradient(180deg, #f5f3ff 0%, #ffffff 100%);
+    }
 
-  /* ── Sidebar ── */
-  [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #06101e 0%, #081526 100%) !important;
-    border-right: 1px solid #1e3a5f;
-  }
-  [data-testid="stSidebar"] .stMarkdown p,
-  [data-testid="stSidebar"] label {
-    color: #94a3b8 !important;
-  }
-  [data-testid="stSidebar"] h3 {
-    color: #38bdf8 !important;
-    font-family: 'Space Mono', monospace !important;
-    font-size: 0.9rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+        border-right: 1px solid #e6eef8;
+        color: #0f172a !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #0f172a !important;
+    }
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] label {
+        color: #0f172a !important;
+    }
+    [data-testid="stRadio"] label,
+    [data-testid="stRadio"] span,
+    [data-testid="stRadio"] p {
+        color: #0f172a !important;
+    }
+    [data-testid="stCheckbox"] label,
+    [data-testid="stCheckbox"] span,
+    [data-testid="stCheckbox"] p {
+        color: #0f172a !important;
+    }
 
-  /* ── Assumption boxes ── */
-  .assumption-box {
-    background: rgba(14, 42, 80, 0.6);
-    border-left: 3px solid #0ea5e9;
-    border-radius: 0 8px 8px 0;
-    padding: 14px 18px;
-    margin: 12px 0;
-    font-size: 0.88rem;
-    color: #94a3b8;
-    line-height: 1.7;
-  }
-  .assumption-box b { color: #38bdf8; }
+    /* Tooltip text color */
+    [data-baseweb="tooltip"],
+    .tooltip {
+        color: #0f172a !important;
+        background: #ffffff !important;
+        border: 1px solid #e6eef8 !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="popover"],
+    [data-testid="stSidebar"] [aria-label*="help"] {
+        color: #0f172a !important;
+    }
+    [data-testid="stSidebar"] input[type="number"],
+    [data-testid="stNumberInput"] input {
+        color: #0f172a !important;
+        background: #ffffff !important;
+    }
+    [data-testid="stSidebar"] h3 {
+        color: #0b5dbb !important;
+        font-family: 'Space Mono', monospace !important;
+        font-size: 0.9rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
 
-  /* ── Warning/disclosure boxes ── */
-  .disclosure-box {
-    background: rgba(234, 179, 8, 0.08);
-    border-left: 3px solid #eab308;
-    border-radius: 0 8px 8px 0;
-    padding: 14px 18px;
-    margin: 12px 0;
-    font-size: 0.85rem;
-    color: #c8c87a;
-  }
-  .disclosure-box b { color: #fcd34d; }
+    /* Assumption boxes */
+    .assumption-box {
+        background: #f1f5f9;
+        border-left: 3px solid #0ea5e9;
+        border-radius: 0 8px 8px 0;
+        padding: 14px 18px;
+        margin: 12px 0;
+        font-size: 0.88rem;
+        color: #0f172a;
+        line-height: 1.7;
+    }
+    .assumption-box b { color: #0b5dbb; }
 
-  /* ── Real-world comparison cards ── */
-  .comparison-card {
-    background: linear-gradient(135deg, #0f2540 0%, #0c1e36 100%);
-    border: 1px solid #1e4976;
-    border-radius: 14px;
-    padding: 22px 16px;
-    text-align: center;
-    margin: 6px 2px;
-    transition: border-color 0.2s;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-  }
-  .comparison-card:hover { border-color: #38bdf8; }
-  .comparison-card .icon   { font-size: 2.4rem; line-height: 1.2; }
-  .comparison-card .count  { font-family: 'Space Mono', monospace; font-size: 1.7rem;
-                              color: #38bdf8; font-weight: 700; margin: 4px 0; }
-  .comparison-card .label  { font-size: 0.82rem; color: #94a3b8; }
+    /* Warning/disclosure boxes */
+    .disclosure-box {
+        background: rgba(250, 204, 21, 0.06);
+        border-left: 3px solid #eab308;
+        border-radius: 0 8px 8px 0;
+        padding: 14px 18px;
+        margin: 12px 0;
+        font-size: 0.85rem;
+        color: #5f3700;
+    }
+    .disclosure-box b { color: #b45309; }
 
-  /* ── Tabs ── */
-  .stTabs [data-baseweb="tab-list"] {
-    background: #060c1a;
-    border-bottom: 1px solid #1e3a5f;
-    gap: 4px;
-  }
-  .stTabs [data-baseweb="tab"] {
-    color: #7da4c0 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 8px 8px 0 0;
-  }
-  .stTabs [aria-selected="true"] {
-    color: #38bdf8 !important;
-    background: #0f2540 !important;
-    border-bottom: 2px solid #38bdf8 !important;
-  }
+    /* Real-world comparison cards */
+    .comparison-card {
+        background: #ffffff;
+        border: 1px solid #e6eef8;
+        border-radius: 14px;
+        padding: 22px 16px;
+        text-align: center;
+        margin: 6px 2px;
+        transition: border-color 0.2s;
+        box-shadow: 0 2px 8px rgba(11,77,187,0.04);
+    }
+    .comparison-card:hover { border-color: #0b5dbb; }
+    .comparison-card .icon   { font-size: 2.4rem; line-height: 1.2; }
+    .comparison-card .count  { font-family: 'Space Mono', monospace; font-size: 1.7rem;
+                                                            color: #0b5dbb; font-weight: 700; margin: 4px 0; }
+    .comparison-card .label  { font-size: 0.82rem; color: #475569; }
 
-  /* ── Sliders / inputs ── */
-  [data-testid="stSlider"] > div > div > div {
-    background: #38bdf8 !important;
-  }
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        background: #ffffff;
+        border-bottom: 1px solid #e6eef8;
+        gap: 4px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #475569 !important;
+        font-family: 'DM Sans', sans-serif !important;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px 8px 0 0;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #0b5dbb !important;
+        background: #ffffff !important;
+        border-bottom: 2px solid #0b5dbb !important;
+    }
 
-  /* ── Expander ── */
-  .streamlit-expanderHeader {
-    background: #0d1f35 !important;
-    border: 1px solid #1e3a5f !important;
-    border-radius: 8px !important;
-    color: #7dd3fc !important;
-    font-weight: 600 !important;
-  }
+    /* Sliders / inputs */
+    [data-testid="stSlider"] > div > div > div {
+        background: #0b5dbb !important;
+    }
 
-  /* ── Footer ── */
-  .footer-text {
-    text-align: center;
-    color: #7a92ae;
-    font-size: 0.8rem;
-    padding: 24px 0 12px;
-    border-top: 1px solid #1e3a5f;
-    margin-top: 32px;
-    line-height: 1.8;
-  }
-  .footer-text a { color: #38bdf8; text-decoration: none; }
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: #f8fafc !important;
+        border: 1px solid #e6eef8 !important;
+        border-radius: 8px !important;
+        color: #0b5dbb !important;
+        font-weight: 600 !important;
+    }
 
-  /* ── DataFrames ── */
-  [data-testid="stDataFrame"] {
-    border: 1px solid #1e3a5f;
-    border-radius: 8px;
-  }
+    /* Footer */
+    .footer-text {
+        text-align: center;
+        color: #475569;
+        font-size: 0.8rem;
+        padding: 24px 0 12px;
+        border-top: 1px solid #e6eef8;
+        margin-top: 32px;
+        line-height: 1.8;
+    }
+    .footer-text a { color: #0b5dbb; text-decoration: none; }
+
+    /* DataFrames */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #e6eef8;
+        border-radius: 8px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -401,7 +432,7 @@ MODEL_NAMES = list(AI_SYSTEMS.keys())
 # ══════════════════════════════════════════════════════════════════
 
 with st.sidebar:
-    st.markdown("## 💧 AI Water Explorer")
+    st.markdown("## AI Water Explorer")
     st.caption("Adjust settings to explore how assumptions affect water estimates.")
 
     st.markdown("---")
@@ -570,10 +601,10 @@ def compute_water(model: str) -> dict:
 water = {m: compute_water(m) for m in MODEL_NAMES}
 
 # Plotly chart theme — consistent with the dark dashboard aesthetic
-PLOTLY_TEMPLATE = "plotly_dark"
-PLOT_BG   = "rgba(6, 12, 26, 0)"    # transparent over page background
-PAPER_BG  = "rgba(6, 12, 26, 0)"
-GRID_COL  = "#1e3a5f"
+PLOTLY_TEMPLATE = "plotly_white"
+PLOT_BG   = "rgba(255, 255, 255, 0)"    # transparent over page background
+PAPER_BG  = "rgba(255, 255, 255, 0)"
+GRID_COL  = "#e6eef8"
 MODEL_COLORS = [AI_SYSTEMS[m]["color"] for m in MODEL_NAMES]
 
 
@@ -581,7 +612,7 @@ MODEL_COLORS = [AI_SYSTEMS[m]["color"] for m in MODEL_NAMES]
 # SECTION 5: HEADER
 # ══════════════════════════════════════════════════════════════════
 
-st.markdown("# 💧 How Thirsty Is AI?")
+st.markdown("# How Thirsty Is AI?")
 st.markdown(
     "Explore the **hidden water footprint** of popular AI systems — "
     "from the moment you hit Send, to the massive resources required to build them."
@@ -602,14 +633,13 @@ st.markdown("""
 # ── About expander ──────────────────────────────────────────────
 with st.expander("ℹ️ How this works — methodology & sources", expanded=False):
     st.markdown("""
-    ### The Four Stages of AI Water Use
+    ### The Three Stages of AI Water Use
 
     | Stage | What happens | Water source |
     |---|---|---|
     | **Inference** | GPUs process your prompt | Cooling towers at data center |
     | **Training** | Model learned from billions of examples | Cooling during multi-week GPU runs |
     | **Development** | Fine-tuning, safety testing, RLHF | Same as training, repeated many times |
-    | **Electricity** | Power plants generate electricity AI runs on | Thermoelectric cooling at power plants |
 
     ### Key Sources
     - **Li, P. et al. (2023).** *"Making AI Less Thirsty: Uncovering and Addressing the Secret
@@ -642,7 +672,6 @@ for col, model in zip(kpi_cols, MODEL_NAMES):
         st.metric(
             label=model.split("(")[0].strip(),
             value=val_str,
-            delta=co,
             delta_color="off",
         )
 
@@ -658,11 +687,10 @@ st.markdown("---")
 # SECTION 7: TABS
 # ══════════════════════════════════════════════════════════════════
 
-tab_overview, tab_prompt, tab_training, tab_electricity, tab_realworld = st.tabs([
+tab_overview, tab_prompt, tab_training, tab_realworld = st.tabs([
     "📊 Overview",
     "💬 Per Prompt",
     "🏗️ Training & Dev",
-    "⚡ Electricity",
     "🌍 Real-World Scale",
 ])
 
@@ -673,86 +701,46 @@ tab_overview, tab_prompt, tab_training, tab_electricity, tab_realworld = st.tabs
 with tab_overview:
     st.header("Daily Water Footprint Overview")
     st.caption(
-        f"Based on {daily_prompts} prompts/day across all four stages. "
+        f"Based on {daily_prompts} prompts/day across all three stages. "
         "Training cost is amortized over the selected period."
     )
 
-    col_left, col_right = st.columns([3, 2])
+    # Stacked bar: daily inference + electricity water per model
+    inf_daily  = [to_display_unit(water[m]["inference_daily_gal"])[0]  for m in MODEL_NAMES]
+    elec_daily = [to_display_unit(water[m]["elec_daily_gal"])[0]        for m in MODEL_NAMES]
+    _, u_label = to_display_unit(1)
 
-    with col_left:
-        # Stacked bar: daily inference + electricity water per model
-        inf_daily  = [to_display_unit(water[m]["inference_daily_gal"])[0]  for m in MODEL_NAMES]
-        elec_daily = [to_display_unit(water[m]["elec_daily_gal"])[0]        for m in MODEL_NAMES]
-        _, u_label = to_display_unit(1)
-
-        fig_overview = go.Figure()
-        fig_overview.add_trace(go.Bar(
-            name="Inference (direct cooling)",
-            x=MODEL_NAMES, y=inf_daily,
-            marker_color="#38bdf8",
-            hovertemplate="%{y:.5f} " + u_label + "<extra>Inference</extra>",
-        ))
-        fig_overview.add_trace(go.Bar(
-            name="Electricity (power generation + DC cooling)",
-            x=MODEL_NAMES, y=elec_daily,
-            marker_color="#0369a1",
-            hovertemplate="%{y:.5f} " + u_label + "<extra>Electricity</extra>",
-        ))
-        fig_overview.update_layout(
-            barmode="stack",
-            title=f"Daily Operational Water Use ({daily_prompts} prompts/day)",
-            yaxis_title=f"Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-            legend=dict(orientation="h", y=1.12),
-            margin=dict(t=80),
-        )
-        st.plotly_chart(fig_overview, use_container_width=True)
-
-    with col_right:
-        # Radar / spider chart comparing the four dimensions
-        categories = ["Inference", "Electricity", "Training (÷10K)", "Dev (÷10K)"]
-
-        fig_radar = go.Figure()
-        for model in MODEL_NAMES:
-            w = water[model]
-            # Normalise training/dev to be chart-comparable with daily figures
-            vals = [
-                to_display_unit(w["inference_daily_gal"])[0],
-                to_display_unit(w["elec_daily_gal"])[0],
-                to_display_unit(w["training_total_gal"] / 10_000)[0],
-                to_display_unit(w["dev_total_gal"] / 10_000)[0],
-            ]
-            vals += [vals[0]]  # close the shape
-            fig_radar.add_trace(go.Scatterpolar(
-                r=vals,
-                theta=categories + [categories[0]],
-                name=model.split("(")[0].strip(),
-                line_color=AI_SYSTEMS[model]["color"],
-                fill="toself",
-                opacity=0.35,
-            ))
-        fig_radar.update_layout(
-            polar=dict(
-                bgcolor="rgba(15,37,64,0.5)",
-                radialaxis=dict(gridcolor=GRID_COL, color="#334155"),
-                angularaxis=dict(gridcolor=GRID_COL, color="#7dd3fc"),
-            ),
-            template=PLOTLY_TEMPLATE,
-            paper_bgcolor=PAPER_BG,
-            title="Multi-Dimensional Water Profile",
-            legend=dict(orientation="h", y=-0.1),
-            margin=dict(t=60, b=60),
-        )
-        st.plotly_chart(fig_radar, use_container_width=True)
+    fig_overview = go.Figure()
+    fig_overview.add_trace(go.Bar(
+        name="Inference (direct cooling)",
+        x=MODEL_NAMES, y=inf_daily,
+        marker_color="#38bdf8",
+        hovertemplate="%{y:.5f} " + u_label + "<extra>Inference</extra>",
+    ))
+    fig_overview.add_trace(go.Bar(
+        name="Electricity (power generation + DC cooling)",
+        x=MODEL_NAMES, y=elec_daily,
+        marker_color="#0369a1",
+        hovertemplate="%{y:.5f} " + u_label + "<extra>Electricity</extra>",
+    ))
+    fig_overview.update_layout(
+        barmode="stack",
+        title=f"Daily Operational Water Use ({daily_prompts} prompts/day)",
+        yaxis_title=f"Water ({u_label})",
+        template=PLOTLY_TEMPLATE,
+        plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
+        yaxis=dict(gridcolor=GRID_COL),
+        legend=dict(orientation="h", y=1.12),
+        margin=dict(t=80),
+    )
+    st.plotly_chart(fig_overview, use_container_width=True)
 
     st.markdown("""
     <div class="assumption-box">
       <b>📌 Overview Assumptions:</b><br>
       • Daily totals combine inference cooling water + electricity-related water<br>
-      • Training and development are one-time costs shown separately in the Training tab<br>
-      • Radar chart scales training/dev by ÷10,000 for visual comparability with daily figures<br>
+      • Training and development are one-time costs shown in the Training tab<br>
+      • Development water = training water × dev fraction; default fractions are 20–30% based on ML engineering literature<br>
       • "Electricity" includes both on-site data center cooling (WUE) and off-site power-plant water<br>
     </div>
     """, unsafe_allow_html=True)
@@ -768,69 +756,70 @@ with tab_prompt:
         "process your request — generating heat that requires water-based cooling."
     )
 
-    col_a, col_b = st.columns([3, 2])
+    prompt_vals = [to_display_unit(water[m]["inference_per_prompt_gal"])[0] for m in MODEL_NAMES]
+    elec_per_prompt = [to_display_unit(water[m]["elec_per_prompt_gal"])[0]  for m in MODEL_NAMES]
+    _, u_label = to_display_unit(1)
 
-    with col_a:
-        prompt_vals = [to_display_unit(water[m]["inference_per_prompt_gal"])[0] for m in MODEL_NAMES]
-        elec_per_prompt = [to_display_unit(water[m]["elec_per_prompt_gal"])[0]  for m in MODEL_NAMES]
-        _, u_label = to_display_unit(1)
-
-        fig_prompt = go.Figure()
+    fig_prompt = go.Figure()
+    fig_prompt.add_trace(go.Bar(
+        name="Direct cooling (data center)",
+        x=MODEL_NAMES, y=prompt_vals,
+        marker_color=["#4285f4"] * len(MODEL_NAMES),
+        textfont=dict(color="white"),
+        hovertemplate="%{y:.6f} " + u_label,
+    ))
+    if show_elec_water:
         fig_prompt.add_trace(go.Bar(
-            name="Direct cooling (data center)",
-            x=MODEL_NAMES, y=prompt_vals,
-            marker_color=[AI_SYSTEMS[m]["color"] for m in MODEL_NAMES],
-            text=[f"{v:.5f} {u_label}" for v in prompt_vals],
+            name="Electricity water",
+            x=MODEL_NAMES, y=elec_per_prompt,
+            marker_color="#1e40af",
+            text=[f"{p + e:.5f} {u_label}" for p, e in zip(prompt_vals, elec_per_prompt)],
             textposition="outside",
+            textfont=dict(color="black"),
             hovertemplate="%{y:.6f} " + u_label,
         ))
-        if show_elec_water:
-            fig_prompt.add_trace(go.Bar(
-                name="Electricity water",
-                x=MODEL_NAMES, y=elec_per_prompt,
-                marker_color="#1e40af",
-                hovertemplate="%{y:.6f} " + u_label,
-            ))
-        fig_prompt.update_layout(
-            barmode="stack",
-            title="Water per Single AI Prompt",
-            yaxis_title=f"Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-            legend=dict(orientation="h", y=1.1),
-        )
-        st.plotly_chart(fig_prompt, use_container_width=True)
+    else:
+        fig_prompt.data[0].text = [f"{v:.5f} {u_label}" for v in prompt_vals]
+        fig_prompt.data[0].textposition = "outside"
+    fig_prompt.update_layout(
+        barmode="stack",
+        title="Water per Single AI Prompt",
+        yaxis_title=f"Water ({u_label})",
+        template=PLOTLY_TEMPLATE,
+        plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
+        yaxis=dict(gridcolor=GRID_COL),
+        legend=dict(orientation="h", y=1.1),
+    )
+    st.plotly_chart(fig_prompt, use_container_width=True)
 
-    with col_b:
-        st.markdown("#### How does it scale with usage?")
-        scale_max = st.slider("Max prompts to chart", 10, 1000, 100, key="scale_slider")
-        x_range = list(range(1, scale_max + 1))
+    st.markdown("#### How does it scale with usage?")
+    scale_max = st.slider("Max prompts to chart", 10, 1000, 100, key="scale_slider")
+    x_range = list(range(1, scale_max + 1))
 
-        fig_scale = go.Figure()
-        for model in MODEL_NAMES:
-            y_vals = [
-                to_display_unit(water[model]["inference_per_prompt_gal"] * n)[0]
-                for n in x_range
-            ]
-            fig_scale.add_trace(go.Scatter(
-                x=x_range, y=y_vals,
-                name=model.split("(")[0].strip(),
-                line=dict(color=AI_SYSTEMS[model]["color"], width=2),
-                mode="lines",
-                hovertemplate="%{y:.4f} " + u_label,
-            ))
-        fig_scale.update_layout(
-            title="Cumulative Water vs. Number of Prompts",
-            xaxis_title="Number of Prompts",
-            yaxis_title=f"Total Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-            xaxis=dict(gridcolor=GRID_COL),
-            legend=dict(orientation="h", y=1.1),
-        )
-        st.plotly_chart(fig_scale, use_container_width=True)
+    fig_scale = go.Figure()
+    for model in MODEL_NAMES:
+        y_vals = [
+            to_display_unit(water[model]["inference_per_prompt_gal"] * n)[0]
+            for n in x_range
+        ]
+        fig_scale.add_trace(go.Scatter(
+            x=x_range, y=y_vals,
+            name=model.split("(")[0].strip(),
+            line=dict(color=AI_SYSTEMS[model]["color"], width=2),
+            mode="lines",
+            hovertemplate="%{y:.4f} " + u_label,
+        ))
+    fig_scale.update_layout(
+        title="Cumulative Water vs. Number of Prompts",
+        xaxis_title="Number of Prompts",
+        yaxis_title=f"Total Water ({u_label})",
+        template=PLOTLY_TEMPLATE,
+        plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
+        yaxis=dict(gridcolor=GRID_COL),
+        xaxis=dict(gridcolor=GRID_COL),
+        legend=dict(orientation="h", y=1.1),
+    )
+    st.plotly_chart(fig_scale, use_container_width=True)
 
     # Monthly / annual projections
     st.markdown("#### 📅 Your Personal Usage Projections")
@@ -868,72 +857,37 @@ with tab_training:
         "testing, RLHF) adds further cost before a model is released."
     )
 
-    col_a, col_b = st.columns([3, 2])
+    _, u_label = to_display_unit(1)
+    train_vals = [to_display_unit(water[m]["training_total_gal"])[0] for m in MODEL_NAMES]
+    dev_vals   = [to_display_unit(water[m]["dev_total_gal"])[0]       for m in MODEL_NAMES]
 
-    with col_a:
-        _, u_label = to_display_unit(1)
-        train_vals = [to_display_unit(water[m]["training_total_gal"])[0] for m in MODEL_NAMES]
-        dev_vals   = [to_display_unit(water[m]["dev_total_gal"])[0]       for m in MODEL_NAMES]
-
-        fig_train = go.Figure()
-        fig_train.add_trace(go.Bar(
-            name="Training (initial run)",
-            x=MODEL_NAMES, y=train_vals,
-            marker_color="#0ea5e9",
-            hovertemplate="%{y:,.0f} " + u_label,
-        ))
-        fig_train.add_trace(go.Bar(
-            name="Development (RLHF, fine-tuning, evals)",
-            x=MODEL_NAMES, y=dev_vals,
-            marker_color="#075985",
-            hovertemplate="%{y:,.0f} " + u_label,
-        ))
-        fig_train.update_layout(
-            barmode="group",
-            title="One-Time Training & Development Water Cost",
-            yaxis_title=f"Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-            legend=dict(orientation="h", y=1.1),
-        )
-        st.plotly_chart(fig_train, use_container_width=True)
-
-    with col_b:
-        st.markdown("#### Amortized Per-User, Per-Day Share")
-        st.caption("One-time training costs divided across all users and your amortization window.")
-
-        user_count = st.select_slider(
-            "Daily active users (global)",
-            options=[1_000_000, 10_000_000, 50_000_000, 100_000_000, 200_000_000],
-            value=100_000_000,
-            format_func=lambda x: f"{x / 1_000_000:.0f}M",
-            key="user_count_slider",
-        )
-
-        # Per-user daily share: total / (years × 365 days × users)
-        amort_vals = [
-            to_display_unit(
-                water[m]["training_total_gal"] / (amortization_years * 365 * user_count)
-            )[0]
-            for m in MODEL_NAMES
-        ]
-
-        fig_amort = go.Figure(go.Bar(
-            x=MODEL_NAMES, y=amort_vals,
-            marker_color=[AI_SYSTEMS[m]["color"] for m in MODEL_NAMES],
-            text=[f"{v:.8f} {u_label}" for v in amort_vals],
-            textposition="outside",
-            hovertemplate="%{y:.8f} " + u_label,
-        ))
-        fig_amort.update_layout(
-            title=f"Training Water Per User / Day\n({user_count/1e6:.0f}M users · {amortization_years}yr amort.)",
-            yaxis_title=f"Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-        )
-        st.plotly_chart(fig_amort, use_container_width=True)
+    fig_train = go.Figure()
+    fig_train.add_trace(go.Bar(
+        name="Training (initial run)",
+        x=MODEL_NAMES, y=train_vals,
+        marker_color="#0ea5e9",
+        text=[f"{v:,.0f} {u_label}" for v in train_vals],
+        textposition="outside",
+        hovertemplate="%{y:,.0f} " + u_label,
+    ))
+    fig_train.add_trace(go.Bar(
+        name="Development (RLHF, fine-tuning, evals)",
+        x=MODEL_NAMES, y=dev_vals,
+        marker_color="#075985",
+        text=[f"{v:,.0f} {u_label}" for v in dev_vals],
+        textposition="outside",
+        hovertemplate="%{y:,.0f} " + u_label,
+    ))
+    fig_train.update_layout(
+        barmode="group",
+        title="One-Time Training & Development Water Cost",
+        yaxis_title=f"Water ({u_label})",
+        template=PLOTLY_TEMPLATE,
+        plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
+        yaxis=dict(gridcolor=GRID_COL),
+        legend=dict(orientation="h", y=1.1),
+    )
+    st.plotly_chart(fig_train, use_container_width=True)
 
     # Context: put training water in human terms
     st.markdown("#### 🧊 What Does Training Water Actually Look Like?")
@@ -965,119 +919,6 @@ with tab_training:
 
 
 # ────────────────────────────────────────────────────────────────
-# TAB: ELECTRICITY
-# ────────────────────────────────────────────────────────────────
-with tab_electricity:
-    st.header("Water from Electricity Use")
-    st.markdown(
-        "Most AI data centers rely at least partly on the US grid, where "
-        "thermoelectric power plants (coal, gas, nuclear) withdraw large amounts "
-        "of water for cooling. Even 'clean' nuclear power is very water-intensive."
-    )
-
-    col_a, col_b = st.columns([3, 2])
-    _, u_label = to_display_unit(1)
-
-    with col_a:
-        # Breakdown: on-site WUE cooling vs off-site power-plant water
-        dc_cool = [
-            to_display_unit(
-                AI_SYSTEMS[m]["power_per_prompt_kwh"]
-                * AI_SYSTEMS[m]["data_center_wue"]
-                * LITERS_TO_GALLONS
-                * daily_prompts
-            )[0]
-            for m in MODEL_NAMES
-        ]
-        offsite = [
-            to_display_unit(
-                AI_SYSTEMS[m]["power_per_prompt_kwh"] * elec_intensity * daily_prompts
-            )[0] if show_elec_water else 0.0
-            for m in MODEL_NAMES
-        ]
-
-        fig_elec = go.Figure()
-        fig_elec.add_trace(go.Bar(
-            name="Data center cooling (on-site WUE)",
-            x=MODEL_NAMES, y=dc_cool,
-            marker_color="#0ea5e9",
-        ))
-        fig_elec.add_trace(go.Bar(
-            name="Power plant water (off-site grid)",
-            x=MODEL_NAMES, y=offsite,
-            marker_color="#1e3a5f",
-        ))
-        fig_elec.update_layout(
-            barmode="stack",
-            title=f"Electricity-Related Water ({daily_prompts} prompts/day)",
-            yaxis_title=f"Water ({u_label})",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-            legend=dict(orientation="h", y=1.1),
-        )
-        st.plotly_chart(fig_elec, use_container_width=True)
-
-    with col_b:
-        # WUE comparison chart
-        wue_companies = ["Microsoft Azure", "Amazon AWS", "Meta", "Anthropic (avg)", "Google GCP"]
-        wue_values    = [0.49, 0.18, 0.26, 0.51, 1.0]
-        wue_colors    = ["#10b981", "#f97316", "#a855f7", "#f97316", "#4285f4"]
-        wue_sources   = [
-            "2022 Sustainability Report",
-            "2022 Sustainability Report",
-            "2022 Sustainability Report",
-            "Weighted AWS/GCP avg",
-            "2022 Environmental Report",
-        ]
-
-        # Sort by WUE for readability
-        sorted_pairs = sorted(zip(wue_values, wue_companies, wue_colors), key=lambda x: x[0])
-        s_vals, s_names, s_colors = zip(*sorted_pairs)
-
-        fig_wue = go.Figure(go.Bar(
-            x=s_names, y=s_vals,
-            marker_color=list(s_colors),
-            text=[f"{v} L/kWh" for v in s_vals],
-            textposition="outside",
-        ))
-        fig_wue.update_layout(
-            title="Data Center WUE by Company",
-            yaxis_title="WUE (Liters water / kWh)",
-            template=PLOTLY_TEMPLATE,
-            plot_bgcolor=PLOT_BG, paper_bgcolor=PAPER_BG,
-            yaxis=dict(gridcolor=GRID_COL),
-        )
-        st.plotly_chart(fig_wue, use_container_width=True)
-        st.caption("Lower WUE = more water efficient. AWS leads at 0.18 L/kWh; GCP is highest at ~1.0 L/kWh.")
-
-    # Power-per-prompt summary table
-    st.markdown("#### Estimated Compute & Power per Prompt")
-    power_df = pd.DataFrame({
-        "Model":                MODEL_NAMES,
-        "Company":              [AI_SYSTEMS[m]["company"] for m in MODEL_NAMES],
-        "Power/Prompt (kWh)":   [AI_SYSTEMS[m]["power_per_prompt_kwh"] for m in MODEL_NAMES],
-        "Daily Power (kWh)":    [AI_SYSTEMS[m]["power_per_prompt_kwh"] * daily_prompts for m in MODEL_NAMES],
-        "Data Center WUE":      [f"{AI_SYSTEMS[m]['data_center_wue']} L/kWh" for m in MODEL_NAMES],
-        "Disclosed?":           ["No — estimate" for _ in MODEL_NAMES],
-    })
-    st.dataframe(power_df, use_container_width=True, hide_index=True)
-
-    st.markdown("""
-    <div class="assumption-box">
-      <b>📌 Electricity Water Assumptions:</b><br>
-      • WUE figures from published 2022–2023 corporate sustainability reports<br>
-      • Power per prompt: 0.002–0.003 kWh based on GPU inference benchmarks; no company has officially disclosed this<br>
-      • US grid water intensity: 1.8 gal/kWh withdrawn · 0.3 gal/kWh consumed (USGS)<br>
-      • Withdrawn vs. consumed: most power-plant water is returned to its source (rivers, lakes) — consumed is the
-        ecologically meaningful figure but withdrawn indicates total pressure on water bodies<br>
-      • Renewables (solar PV, wind) use far less water for generation; data centers with 100% renewable PPAs may have
-        much lower off-site electricity water footprints
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ────────────────────────────────────────────────────────────────
 # TAB: REAL-WORLD SCALE
 # ────────────────────────────────────────────────────────────────
 with tab_realworld:
@@ -1085,7 +926,7 @@ with tab_realworld:
     st.markdown("Numbers only become meaningful when you can feel their scale. Let's translate.")
 
     # ── Personal comparison ──────────────────────────────────────
-    st.markdown("### 🧍 Your Personal Footprint")
+    st.markdown("### Your Personal Footprint")
 
     sel_model = st.selectbox("Select AI system", MODEL_NAMES, key="rw_model")
     scope = st.radio(
@@ -1155,7 +996,7 @@ with tab_realworld:
 
     g_col_a, g_col_b, g_col_c, g_col_d = st.columns(4)
     with g_col_a:
-        st.metric("Daily inference water", fmt_water(global_daily_gal))
+        st.metric("Daily inference water", f"{global_daily_gal / 1_000_000:,.1f}M")
     with g_col_b:
         st.metric("Olympic pools", f"{global_daily_gal / 660_000:,.1f}")
     with g_col_c:
